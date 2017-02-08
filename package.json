@@ -1,0 +1,45 @@
+{
+  "name": "dwb",
+  "version": "0.1.0",
+  "description": "A Azure SQL Data Warehouse benchmarking tool",
+  "babel": {
+    "presets": [
+      [
+        "env",
+        {
+          "targets": {
+            "node": "current"
+          }
+        }
+      ]
+    ]
+  },
+  "scripts": {
+    "start": "nodemon src/index.js --exec babel-node",
+    "clean": "rimraf build **/*.log",
+    "prebuild": "npm run clean",
+    "build": "babel src -d build",
+    "serve": "NODE_ENV=production node build/index.js"
+  },
+  "keywords": [
+    "azure",
+    "SQL Data Warehouse",
+    "benchmarking"
+  ],
+  "author": "Tianxiao Ma",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.16.0",
+    "cors": "^2.8.1",
+    "express": "^4.14.1",
+    "minimist": "^1.2.0",
+    "mssql": "^3.3.0",
+    "winston": "^2.3.1"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.22.2",
+    "babel-preset-env": "^1.1.8",
+    "nodemon": "^1.11.0",
+    "rimraf": "^2.5.4"
+  }
+}
