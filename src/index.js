@@ -17,7 +17,12 @@ conn.connect()
   .then(() => {
     app.use('/api', api(conn))
   })
-  .catch(err => winston.error(err))
+  .catch(err => winston.error(`${new Date()} ${err.message}`))
+
+process.on('SIGINT', () => {
+  conn.close()
+  setTimeout(() => process.exit(0), 300)
+})
 
 app.listen(port, () => {
   winston.info(`${new Date()} App listening on port ${port}...`)

@@ -6,7 +6,7 @@ export default conn => {
   const sql = Router({ mergeParams: true })
 
   sql.post('/', (req, res, next) => {
-    if (!req.body && !req.body.sql) {
+    if (!req.body || !req.body.sql) {
       winston.error(`${new Date()} Missing SQL command`)
       return res.sendStatus(400)
     }
@@ -16,24 +16,28 @@ export default conn => {
     const started = Date.now()
     new Request(conn).query(req.body.sql)
       .then(data => {
+        const duration = Date.now() - started
+
         res.status(200)
           .json({
             data,
-            query: req.body.sql,
-            duration: Date.now() - started
+            duration,
+            query: req.body.sql
           })
-        winston.info(`${new Date()} Query SQL command completed: ${req.body.sql}`)
+        winston.info(`${new Date()} Query SQL command completed: ${req.body.sql}, duration: ${duration}`)
       }).catch(error => {
+        const duration = Date.now() - started
+
         next({
           error,
-          query: req.body.sql,
-          duration: Date.now() - started
+          duration,
+          query: req.body.sql
         })
       })
   })
 
   sql.use((err, req, res, next) => {
-    winston.error(`${new Date()} ${err}`)
+    winston.error(`${new Date()} ${err.error.message}`)
     res.status(400).json(err)
   })
 
