@@ -1,0 +1,15 @@
+[{
+  "path": "/api/sql",
+  "body": "{\"sql\":\"select count(*) from table where col='a'\"}",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  }
+}, {
+  "path": "/api/sql",
+  "body": "{\"sql\":\"select count(*) from table where col='b'\"}",
+  "method": "POST",
+  "headers": {
+    "Content-Type": "application/json"
+  }
+}]
