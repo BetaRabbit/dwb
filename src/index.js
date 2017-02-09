@@ -1,23 +1,29 @@
 import { Connection } from 'mssql'
-import winston from 'winston'
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
+import morgan from 'morgan'
 import config from '../config'
 import api from './api'
+import logger from './utils/logger'
 
 const port = process.env.PORT || 3000
-const app = express()
-const conn = new Connection(config)
 
+const app = express()
 app.use(cors())
 app.use(bodyParser.json())
+app.use(morgan('combined', {
+  stream: {
+    write: msg => logger.info(msg.trim())
+  }
+}))
 
+const conn = new Connection(config)
 conn.connect()
   .then(() => {
     app.use('/api', api(conn))
   })
-  .catch(err => winston.error(`${new Date()} ${err.message}`))
+  .catch(err => logger.error(err))
 
 process.on('SIGINT', () => {
   conn.close()
@@ -25,5 +31,5 @@ process.on('SIGINT', () => {
 })
 
 app.listen(port, () => {
-  winston.info(`${new Date()} App listening on port ${port}...`)
+  logger.info(`App listening on port ${port}...`)
 })

@@ -19,7 +19,7 @@
     "clean": "rimraf build **/*.log",
     "prebuild": "npm run clean",
     "build": "babel src -d build",
-    "serve": "NODE_ENV=production node build/index.js"
+    "serve": "node build/index.js"
   },
   "keywords": [
     "azure",
@@ -33,6 +33,7 @@
     "cors": "^2.8.1",
     "express": "^4.14.1",
     "minimist": "^1.2.0",
+    "morgan": "^1.8.0",
     "mssql": "^3.3.0",
     "winston": "^2.3.1"
   },

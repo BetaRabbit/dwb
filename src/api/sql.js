@@ -1,17 +1,19 @@
-import winston from 'winston'
 import { Router } from 'express'
 import { Request } from 'mssql'
+import logger from '../utils/logger'
 
 export default conn => {
   const sql = Router({ mergeParams: true })
 
   sql.post('/', (req, res, next) => {
+    logger.debug('Request body: ', JSON.stringify(req.body))
+
     if (!req.body || !req.body.sql) {
-      winston.error(`${new Date()} Missing SQL command`)
+      logger.error(`Missing SQL command`)
       return res.sendStatus(400)
     }
 
-    winston.info(`${new Date()} Start querying SQL command: ${req.body.sql}`)
+    logger.info(`Start querying SQL command: ${req.body.sql}`)
 
     const started = Date.now()
     new Request(conn).query(req.body.sql)
@@ -24,10 +26,9 @@ export default conn => {
             duration,
             query: req.body.sql
           })
-        winston.info(`${new Date()} Query SQL command completed: ${req.body.sql}, duration: ${duration}`)
+        logger.info(`Query SQL command completed: ${req.body.sql}, duration: ${duration}`)
       }).catch(error => {
         const duration = Date.now() - started
-
         next({
           error,
           duration,
@@ -37,7 +38,7 @@ export default conn => {
   })
 
   sql.use((err, req, res, next) => {
-    winston.error(`${new Date()} ${err.error.message}`)
+    logger.error(err)
     res.status(400).json(err)
   })
 
