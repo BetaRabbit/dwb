@@ -18,7 +18,7 @@ app.use(morgan('combined', {
   }
 }))
 
-const conn = new Connection(config)
+const conn = new Connection(config[process.env.ENV || 'default'])
 conn.connect()
   .then(() => {
     app.use('/api', api(conn))
