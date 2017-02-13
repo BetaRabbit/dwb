@@ -1,0 +1,62 @@
+{
+  "default": {
+    "user": "username",
+    "password": "password",
+    "server": "hostname",
+    "database": "database",
+    "pool": {
+      "max": 1024
+    },
+    "options": {
+      "driver": "tedious",
+      "connectionTimeout": 300000,
+      "requestTimeout": 30000,
+      "encrypt": true
+    }
+  },
+  "daily": {
+    "user": "username",
+    "password": "password",
+    "server": "hostname",
+    "database": "database",
+    "pool": {
+      "max": 1024
+    },
+    "options": {
+      "driver": "tedious",
+      "connectionTimeout": 300000,
+      "requestTimeout": 30000,
+      "encrypt": true
+    }
+  },
+  "staging": {
+    "user": "username",
+    "password": "password",
+    "server": "hostname",
+    "database": "database",
+    "pool": {
+      "max": 1024
+    },
+    "options": {
+      "driver": "tedious",
+      "connectionTimeout": 300000,
+      "requestTimeout": 30000,
+      "encrypt": true
+    }
+  },
+  "production": {
+    "user": "username",
+    "password": "password",
+    "server": "hostname",
+    "database": "database",
+    "pool": {
+      "max": 1024
+    },
+    "options": {
+      "driver": "tedious",
+      "connectionTimeout": 300000,
+      "requestTimeout": 30000,
+      "encrypt": true
+    }
+  }
+}

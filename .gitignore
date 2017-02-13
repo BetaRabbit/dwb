@@ -40,9 +40,6 @@ jspm_packages
 # production
 build
 
-# DB connection info
-config.json
-
 # misc
 .DS_Store
 npm-debug.log

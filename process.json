@@ -1,17 +1,34 @@
 {
   "apps": [{
-    "name": "dwb-api",
     "script": "./build/index.js",
-    "instances": "max",
+    "instances": -1,
     "exec_mode": "cluster",
     "env": {
+      "name": "dwb-api-dev",
+      "ENV": "staging",
       "NODE_ENV": "development",
-      "PORT": 3000,
+      "PORT": 2000,
       "LOG_LEVEL": "debug"
     },
-    "env_production": {
+    "env_daily": {
+      "name": "dwb-api-daily",
+      "ENV": "daily",
+      "NODE_ENV": "production",
+      "PORT": 3000,
+      "LOG_LEVEL": "info"
+    },
+    "env_staging": {
+      "name": "dwb-api-staging",
+      "ENV": "staging",
       "NODE_ENV": "production",
       "PORT": 4000,
+      "LOG_LEVEL": "info"
+    },
+    "env_production": {
+      "name": "dwb-api-production",
+      "ENV": "production",
+      "NODE_ENV": "production",
+      "PORT": 5000,
       "LOG_LEVEL": "info"
     }
   }]
