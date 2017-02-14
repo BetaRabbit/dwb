@@ -247,20 +247,33 @@ You can define several env configurations and switch to any of them easily by sp
 ## Usage
 Finally, to manage this application, you just need 3 commands as follows.
 
-### start
+### Start
 To start a new application, do:
 ```sh
 pm2 start process.json --env <environment>
 ```
 
-### reload
+### Reload
 to gracefully reload a application without downtime, do:
 ```
 pm2 reload process.json <app-name>
 ```
 
-### stop
+### Stop
 To stop a application, do:
 ```
 pm2 stop <app-name>
 ```
+
+### How to Query
+To execute a SQL command, you need to send a POST request to `http://<ip-or-host>/api/sql` with a body as follows:
+```json
+{
+  "sql": "select * from my_table"
+}
+```
+> **Note:** Do **not** send more than one queries at the same time, **ONLY** the result of the last query will be returned.
+> ```sql
+> select * from my_table_1; select * from my_table_2
+> ```
+> Which will **ONLY** return all rows from `my_table_2`.
