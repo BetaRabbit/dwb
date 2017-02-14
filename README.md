@@ -272,7 +272,7 @@ To execute a SQL command, you need to send a POST request to `http://<ip-or-host
   "sql": "select * from my_table"
 }
 ```
-> **Note:** Do **not** send more than one queries at the same time, **ONLY** the result of the last query will be returned.
+> **Note:** Do **NOT** send more than one queries at the same time, **ONLY** the result of the last query will be returned.
 > ```sql
 > select * from my_table_1; select * from my_table_2
 > ```
