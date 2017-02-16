@@ -1,9 +1,68 @@
 # HTTP SQL Query Wrapper for Azure SQL Data Warehouse
 
+- [Introduction](#introction)
+- [Quick Start](#quick-start)
+- [Deployment](#deployment)
+- [Configuration](#configuration)
+- [Usage](#usage)
+
 ## Introduction
 This project is a HTTP SQL query wrapper for Azure SQL Data Warehouse built with Node.js.
 
 It helps you query Azure SQL Data Warehouse through HTTP request.
+
+## Quick Start
+### Step 1: System Requirement
+#### Ubuntu
+```sh
+sudo apt-get build-essential libssl-dev git
+```
+
+#### CentOS
+```sh
+yum install "Development Tools" openssl-devel git
+```
+
+### Step 2: nvm & Node.js
+```
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | NVM_DIR=/usr/local/nvm bash
+nvm install --lts
+nvm use --lts
+node -v
+```
+
+### Step 3: Node Modules
+Install pm2:
+```sh
+npm install pm2 -g
+```
+
+Install project modules, `cd` to the project folder, and do:
+```sh
+npm install
+```
+
+### Step 4: Configuration
+Specify your Azure SQL Data Warehouse configurations in `config.json`.
+
+### Step 5: Build & Run
+Build:
+```sh
+npm run build
+```
+
+Start server:
+```sh
+pm2 start process.json --env production
+```
+
+### Step 6: Execute Query
+To execute a SQL command, you need to send a POST request to `http://<ip-or-host>:5000/api/sql` with a body as follows:
+```json
+{
+  "sql": "select * from my_table"
+}
+```
 
 ## Deployment
 To run this application, you need to have both Node.js Runtime and Node Modules ready.
@@ -22,7 +81,7 @@ sudo apt-get build-essential libssl-dev git
 
 ##### CentOS
 ```sh
-yum install "Development Tools" openssl-devel
+yum install "Development Tools" openssl-devel git
 ```
 
 ##### Install nvm
@@ -145,7 +204,7 @@ $ pm2 restart process.json --env staging
       "name": "adw-api-dev",
       "ENV": "staging",
       "NODE_ENV": "development",
-      "PORT": 2000,
+      "PORT": 3000,
       "LOG_LEVEL": "debug"
     },
     "env_daily": {
@@ -173,7 +232,7 @@ $ pm2 restart process.json --env staging
 }
 ```
 
-## Cofiguration
+## Configuration
 Before starting this application, you have to specify your Azure SQL Data Warehouse configurations in `config.json`.
 
 You can define several env configurations and switch to any of them easily by specify env variables in `process.json`.
@@ -266,7 +325,7 @@ pm2 stop <app-name>
 ```
 
 ### How to Query
-To execute a SQL command, you need to send a POST request to `http://<ip-or-host>/api/sql` with a body as follows:
+To execute a SQL command, you need to send a POST request to `http://<ip-or-host>:<port>/api/sql` with a body as follows:
 ```json
 {
   "sql": "select * from my_table"
