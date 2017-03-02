@@ -26,15 +26,17 @@ yum install "Development Tools" openssl-devel git
 ### Step 2: nvm & Node.js
 ```
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.0/install.sh | NVM_DIR=/usr/local/nvm bash
-nvm install --lts
-nvm use --lts
-node -v
+nvm install 7.6.0
+nvm use 7.6.0
+nvm alias default 7.6.0
 ```
 
 ### Step 3: Node Modules
 Install pm2:
 ```sh
 npm install pm2 -g
+pm2 install pm2-logrotate
+pm2 startup
 ```
 
 Install project modules, `cd` to the project folder, and do:
@@ -54,6 +56,11 @@ npm run build
 Start server:
 ```sh
 pm2 start process.json --env production
+```
+
+Save current running app
+```
+pm2 save
 ```
 
 ### Step 6: Execute Query
@@ -249,8 +256,6 @@ You can define several env configurations and switch to any of them easily by sp
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -264,8 +269,6 @@ You can define several env configurations and switch to any of them easily by sp
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -279,8 +282,6 @@ You can define several env configurations and switch to any of them easily by sp
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -294,8 +295,6 @@ You can define several env configurations and switch to any of them easily by sp
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -328,7 +327,8 @@ pm2 stop <app-name>
 To execute a SQL command, you need to send a POST request to `http://<ip-or-host>:<port>/api/sql` with a body as follows:
 ```json
 {
-  "sql": "select * from my_table"
+  "sql": "select * from my_table",
+  "timeout": 30000 // optional, request timeout in milliseconds
 }
 ```
 > **Note:** Do **NOT** send more than one queries at the same time, **ONLY** the result of the last query will be returned.
