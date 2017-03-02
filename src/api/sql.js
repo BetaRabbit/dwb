@@ -39,7 +39,11 @@ export default conn => {
        ))
     }
 
-    if (!conn[timeout].connected) {
+    if (conn[timeout].connected) {
+      logger.debug(`Using existing connection, requestTimeout: ${timeout}`)
+
+      handleQuery(conn[timeout], req, res, next)
+    } else {
       logger.debug(`Start connecting to database, requestTimeout: ${timeout}`)
 
       conn[timeout].connect()
@@ -55,9 +59,6 @@ export default conn => {
             timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
           })
         })
-    } else {
-      logger.debug(`Using existing connection, requestTimeout: ${timeout}`)
-      handleQuery(conn[timeout], req, res, next)
     }
   })
 
