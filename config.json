@@ -8,8 +8,6 @@
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -23,8 +21,6 @@
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -38,8 +34,6 @@
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }
@@ -53,8 +47,6 @@
       "max": 1024
     },
     "options": {
-      "driver": "tedious",
-      "connectionTimeout": 300000,
       "requestTimeout": 30000,
       "encrypt": true
     }

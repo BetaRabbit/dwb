@@ -18,16 +18,19 @@ app.use(morgan('combined', {
   }
 }))
 
-const conn = new Connection(config[process.env.ENV || 'default'])
-conn.connect()
-  .then(() => {
-    app.use('/api', api(conn))
-  })
-  .catch(err => logger.error(err))
+const conn = {
+  [config[process.env.ENV || 'default'].options.requestTimeout]: new Connection(config[process.env.ENV || 'default'])
+}
+
+app.use('/api', api(conn))
 
 process.on('SIGINT', () => {
-  conn.close()
-  setTimeout(() => process.exit(0), 300)
+  // close all connections
+  for (const key of Object.keys()) {
+    conn[key].close()
+  }
+
+  setTimeout(() => process.exit(0), 1000)
 })
 
 app.listen(port, () => {
