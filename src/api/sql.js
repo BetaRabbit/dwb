@@ -8,6 +8,9 @@ export default conn => {
   const sql = Router({ mergeParams: true })
 
   sql.post('/', timeout(config.httpConnectionTimeout), haltOnTimedout, (req, res, next) => {
+    logger.debug(`Set connection timeout to ${config.httpConnectionTimeout}`)
+    req.setTimeout(config.httpConnectionTimeout)
+
     logger.debug('Request body: ', JSON.stringify(req.body))
 
     if (!req.body || !req.body.sql) {
