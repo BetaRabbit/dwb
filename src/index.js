@@ -33,6 +33,12 @@ process.on('SIGINT', () => {
   setTimeout(() => process.exit(0), 1000)
 })
 
+// global error handling
+app.use(function (err, req, res, next) {
+  logger.error(JSON.stringify(err))
+  res.status(err.status).json(err)
+})
+
 app.listen(port, () => {
   logger.info(`App listening on port ${port}...`)
 })

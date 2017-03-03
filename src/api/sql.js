@@ -1,60 +1,73 @@
 import { Router } from 'express'
 import { Connection, Request } from 'mssql'
+import timeout from 'connect-timeout'
 import logger from '../utils/logger'
 import config from '../../config'
 
 export default conn => {
   const sql = Router({ mergeParams: true })
 
-  sql.post('/', (req, res, next) => {
+  sql.post('/', timeout(config.httpConnectionTimeout), haltOnTimedout, (req, res, next) => {
     logger.debug('Request body: ', JSON.stringify(req.body))
 
     if (!req.body || !req.body.sql) {
       return next({
         error: {
-          name: 'Argument Error',
+          name: 'BadRequestError',
           message: 'Missing SQL command'
-        }
+        },
+        status: 400
       })
     }
 
-    const timeout = req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
-    logger.debug(req.body.timeout)
-    logger.debug(config[process.env.ENV || 'default'].options.requestTimeout)
-    logger.debug(`timeout: ${timeout}`)
+    const requestTimeout = req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
+    logger.debug(`requestTimeout: ${requestTimeout}`)
 
-    if (!conn[timeout]) {
-      logger.info(`Creating customize connection, requestTimeout: ${timeout}`)
+    if (requestTimeout > config.httpConnectionTimeout) {
+      return next({
+        error: {
+          name: 'BadRequestError',
+          message: `Request timeout exceeds the max value: ${config.httpConnectionTimeout}ms`
+        },
+        status: 400
+      })
+    }
 
-      conn[timeout] = new Connection(Object.assign(
+    if (!conn[requestTimeout]) {
+      logger.info(`Creating customize connection, requestTimeout: ${requestTimeout}`)
+
+      conn[requestTimeout] = new Connection(Object.assign(
         {},
         config[process.env.ENV || 'default'],
         {
           options: Object.assign(
             {},
             config[process.env.ENV || 'default'].options,
-            { requestTimeout: timeout }
+            { requestTimeout }
           )
         }
        ))
     }
 
-    if (conn[timeout].connected) {
-      logger.debug(`Using existing connection, requestTimeout: ${timeout}`)
+    if (conn[requestTimeout].connected) {
+      logger.debug(`Using existing connection, requestTimeout: ${requestTimeout}ms`)
 
-      handleQuery(conn[timeout], req, res, next)
+      handleQuery(req, res, next, conn[requestTimeout])
     } else {
-      logger.debug(`Start connecting to database, requestTimeout: ${timeout}`)
+      logger.debug(`Start connecting to database, requestTimeout: ${requestTimeout}ms`)
 
-      conn[timeout].connect()
+      conn[requestTimeout].connect()
         .then(() => {
           logger.debug('Connection established')
-          handleQuery(conn[timeout], req, res, next)
+
+          handleQuery(req, res, next, conn[requestTimeout])
         })
         .catch(error => {
           logger.debug('Connection failed')
+
           next({
             error,
+            status: 503,
             query: req.body.sql,
             timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
           })
@@ -62,15 +75,10 @@ export default conn => {
     }
   })
 
-  sql.use((err, req, res, next) => {
-    logger.error(JSON.stringify(err))
-    res.status(400).json(err)
-  })
-
   return sql
 }
 
-function handleQuery (conn, req, res, next) {
+function handleQuery (req, res, next, conn) {
   logger.info(`Start querying SQL command: ${req.body.sql}`)
   const started = Date.now()
 
@@ -85,16 +93,21 @@ function handleQuery (conn, req, res, next) {
           query: req.body.sql,
           timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
         })
-      logger.info(`Query SQL command completed: ${req.body.sql}, duration: ${duration}`)
+      logger.info(`Query SQL command completed: ${req.body.sql}, duration: ${duration}ms`)
     })
     .catch(error => {
       const duration = Date.now() - started
 
       next({
         error,
+        status: 400,
         duration,
         query: req.body.sql,
         timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
       })
     })
+}
+
+function haltOnTimedout (req, res, next) {
+  if (!req.timedout) next()
 }
