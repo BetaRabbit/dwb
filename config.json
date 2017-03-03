@@ -1,5 +1,5 @@
 {
-  "httpConnectionTimeout": 3600000,
+  "httpConnectionTimeout": 120000,
   "default": {
     "user": "username",
     "password": "password",
