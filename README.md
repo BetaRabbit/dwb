@@ -20,7 +20,8 @@ sudo apt-get build-essential libssl-dev git
 
 #### CentOS
 ```sh
-yum install "Development Tools" openssl-devel git
+yum groupinstall "Development Tools"
+yum install openssl-devel git
 ```
 
 ### Step 2: nvm & Node.js
@@ -34,8 +35,9 @@ nvm alias default 7.6.0
 ### Step 3: Node Modules
 Install pm2:
 ```sh
-npm install pm2 -g
+npm install pm2 yarn -g
 pm2 install pm2-logrotate
+pm2 set pm2-logrotate:retain 5
 pm2 startup
 ```
 
@@ -88,7 +90,8 @@ sudo apt-get build-essential libssl-dev git
 
 ##### CentOS
 ```sh
-yum install "Development Tools" openssl-devel git
+yum groupinstall "Development Tools"
+yum install openssl-devel git
 ```
 
 ##### Install nvm
