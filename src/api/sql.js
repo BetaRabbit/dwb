@@ -3,6 +3,7 @@ import { Connection, Request } from 'mssql'
 import timeout from 'connect-timeout'
 import logger from '../utils/logger'
 import config from '../../config'
+import { errorCode } from '../utils/index'
 
 export default conn => {
   const sql = Router({ mergeParams: true })
@@ -16,10 +17,10 @@ export default conn => {
     if (!req.body || !req.body.sql) {
       return next({
         error: {
-          name: 'BadRequestError',
+          name: 'RequestError',
           message: 'Missing SQL command'
         },
-        status: 400
+        status: errorCode()
       })
     }
 
@@ -29,10 +30,10 @@ export default conn => {
     if (requestTimeout > config.httpConnectionTimeout) {
       return next({
         error: {
-          name: 'BadRequestError',
+          name: 'RequestError',
           message: `Request timeout exceeds the max value: ${config.httpConnectionTimeout}ms`
         },
-        status: 400
+        status: errorCode()
       })
     }
 
@@ -70,7 +71,7 @@ export default conn => {
 
           next({
             error,
-            status: 503,
+            status: errorCode(error),
             query: req.body.sql,
             timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
           })
@@ -89,7 +90,8 @@ function handleQuery (req, res, next, conn) {
     .then(data => {
       const duration = Date.now() - started
 
-      res.status(200)
+      res
+        .status(200)
         .json({
           data,
           duration,
@@ -103,7 +105,7 @@ function handleQuery (req, res, next, conn) {
 
       next({
         error,
-        status: 400,
+        status: errorCode(error),
         duration,
         query: req.body.sql,
         timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
