@@ -3,7 +3,7 @@ import { Connection, Request } from 'mssql'
 import timeout from 'connect-timeout'
 import logger from '../utils/logger'
 import config from '../../config'
-import { errorCode } from '../utils/index'
+import { errorCode, santilize } from '../utils/index'
 
 export default conn => {
   const sql = Router({ mergeParams: true })
@@ -14,67 +14,110 @@ export default conn => {
 
     logger.debug('Request body: ', JSON.stringify(req.body))
 
+    // check sql parameter
     if (!req.body || !req.body.sql) {
-      return next({
-        error: {
-          name: 'RequestError',
-          message: 'Missing SQL command'
-        },
-        status: errorCode()
-      })
+      const error = {
+        name: 'RequestError',
+        code: 'EREQUEST',
+        message: 'Missing SQL command'
+      }
+
+      return next(santilize({
+        error,
+        status: errorCode(error)
+      }))
     }
 
-    const requestTimeout = req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
-    logger.debug(`requestTimeout: ${requestTimeout}`)
+    // only allowed hosts can user credentials other than the default read only one
+    let user = config[process.env.ENV || 'default'].user
+    let password = config[process.env.ENV || 'default'].password
 
-    if (requestTimeout > config.httpConnectionTimeout) {
-      return next({
-        error: {
-          name: 'RequestError',
-          message: `Request timeout exceeds the max value: ${config.httpConnectionTimeout}ms`
-        },
-        status: errorCode()
-      })
+    if (req.body.user && req.body.password) {
+      logger.debug(`user: ${req.body.user}`)
+
+      if (config.allowedHosts.some(host => (new RegExp(host)).test(req.ip))) {
+        logger.debug(`Host: ${req.ip} is allowed`)
+
+        user = req.body.user
+        password = req.body.password
+      } else {
+        logger.debug(`Host: ${req.ip} is not allowed`)
+
+        const error = {
+          name: 'ConnectionError',
+          code: 'EFORBIDDEN',
+          message: 'Client IP/Host address rejected'
+        }
+
+        return next(santilize({
+          error,
+          status: errorCode(error)
+        }))
+      }
     }
 
-    if (!conn[requestTimeout]) {
-      logger.info(`Creating customize connection, requestTimeout: ${requestTimeout}`)
+    // check request timeout parameter
+    const timeout = req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
+    logger.debug(`requestTimeout: ${timeout}`)
 
-      conn[requestTimeout] = new Connection(Object.assign(
+    if (timeout > config.httpConnectionTimeout) {
+      logger.debug(`requestTimeout ${timeout}ms exceeds the max value: ${config.httpConnectionTimeout}ms.`)
+      const error = {
+        name: 'RequestError',
+        code: 'EREQUEST',
+        message: `Request timeout exceeds the max value: ${config.httpConnectionTimeout}ms`
+      }
+
+      return next(santilize({
+        error,
+        status: errorCode(error)
+      }))
+    }
+
+    const connectionKey = `${timeout}_${user}`
+
+    if (!conn[connectionKey]) {
+      logger.info(`Creating customize connection, requestTimeout: ${timeout}, user: ${user}`)
+
+      conn[connectionKey] = new Connection(Object.assign(
         {},
         config[process.env.ENV || 'default'],
         {
           options: Object.assign(
             {},
             config[process.env.ENV || 'default'].options,
-            { requestTimeout }
+            {
+              requestTimeout: timeout
+            }
           )
-        }
+        },
+        { user, password }
        ))
     }
 
-    if (conn[requestTimeout].connected) {
-      logger.debug(`Using existing connection, requestTimeout: ${requestTimeout}ms`)
+    if (conn[connectionKey].connected) {
+      logger.debug(`Using existing connection, requestTimeout: ${timeout}, user: ${user}`)
 
-      handleQuery(req, res, next, conn[requestTimeout])
+      handleQuery(req, res, next, conn[connectionKey], { user, timeout })
     } else {
-      logger.debug(`Start connecting to database, requestTimeout: ${requestTimeout}ms`)
+      logger.debug(`Start connecting to database, requestTimeout: ${timeout}, user: ${user}`)
 
-      conn[requestTimeout].connect()
+      conn[connectionKey].connect()
         .then(() => {
           logger.debug('Connection established')
 
-          handleQuery(req, res, next, conn[requestTimeout])
+          handleQuery(req, res, next, conn[connectionKey], { user, timeout })
         })
         .catch(error => {
           logger.debug('Connection failed')
 
-          next({
+          next(santilize({
             error,
+            timeout,
+            user,
             status: errorCode(error),
-            query: req.body.sql,
-            timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
-          })
+            query: req.body.sql
+          }))
         })
     }
   })
@@ -82,8 +125,9 @@ export default conn => {
   return sql
 }
 
-function handleQuery (req, res, next, conn) {
+function handleQuery (req, res, next, conn, options) {
   logger.info(`Start querying SQL command: ${req.body.sql}`)
+  const { user, timeout } = options
   const started = Date.now()
 
   new Request(conn).query(req.body.sql)
@@ -92,24 +136,26 @@ function handleQuery (req, res, next, conn) {
 
       res
         .status(200)
-        .json({
+        .json(santilize({
           data,
           duration,
-          query: req.body.sql,
-          timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
-        })
+          timeout,
+          user,
+          query: req.body.sql
+        }))
       logger.info(`Query SQL command completed: ${req.body.sql}, duration: ${duration}ms`)
     })
     .catch(error => {
       const duration = Date.now() - started
 
-      next({
+      next(santilize({
         error,
-        status: errorCode(error),
         duration,
+        timeout,
+        user,
         query: req.body.sql,
-        timeout: req.body.timeout || config[process.env.ENV || 'default'].options.requestTimeout
-      })
+        status: errorCode(error)
+      }))
     })
 }
 

@@ -1,5 +1,6 @@
 {
   "httpConnectionTimeout": 120000,
+  "allowedHosts": [".*"],
   "default": {
     "user": "username",
     "password": "password",

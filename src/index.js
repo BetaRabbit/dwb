@@ -18,8 +18,10 @@ app.use(morgan('combined', {
   }
 }))
 
+const timeout = config[process.env.ENV || 'default'].options.requestTimeout
+const user = config[process.env.ENV || 'default'].user
 const conn = {
-  [config[process.env.ENV || 'default'].options.requestTimeout]: new Connection(config[process.env.ENV || 'default'])
+  [`${timeout}_${user}`]: new Connection(config[process.env.ENV || 'default'])
 }
 
 app.use('/api', api(conn))
