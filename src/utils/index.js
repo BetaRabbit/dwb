@@ -13,7 +13,7 @@ export function errorCode (error) {
 const replacer = str => (match, p1, p2) => p1 + str + p2
 const regExp = str => new RegExp(`(^|\\s+)${str}($|\\s+)`, 'g')
 
-function santilizeStr (msg) {
+function sanitizeStr (msg) {
   return String(msg)
     .replace(regExp(`${config[process.env.ENV || 'default'].server}(?::1433)?`), replacer('AZURE_DATAWAREHOUSE_SERVER'))
     .replace(regExp(config[process.env.ENV || 'default'].server.split('.')[0]), replacer('AZURE_DATAWAREHOUSE_SERVER'))
@@ -21,16 +21,16 @@ function santilizeStr (msg) {
     .replace(regExp(config[process.env.ENV || 'default'].password), replacer('PASSWORD'))
 }
 
-export function santilize (data) {
-  if (Array.isArray(data)) return data.map(item => santilize(item))
+export function sanitize (data) {
+  if (Array.isArray(data)) return data.map(item => sanitize(item))
 
   if (typeof data === 'object') {
     Object.keys(data).forEach(key => {
-      data[key] = santilize(data[key])
+      data[key] = sanitize(data[key])
     })
 
     return data
   }
 
-  return santilizeStr(data)
+  return sanitizeStr(data)
 }

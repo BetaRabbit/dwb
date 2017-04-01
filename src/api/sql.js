@@ -3,7 +3,7 @@ import { Connection, Request } from 'mssql'
 import timeout from 'connect-timeout'
 import logger from '../utils/logger'
 import config from '../../config'
-import { errorCode, santilize } from '../utils/index'
+import { errorCode, sanitize } from '../utils/index'
 
 export default conn => {
   const sql = Router({ mergeParams: true })
@@ -22,7 +22,7 @@ export default conn => {
         message: 'Missing SQL command'
       }
 
-      return next(santilize({
+      return next(sanitize({
         error,
         status: errorCode(error)
       }))
@@ -49,7 +49,7 @@ export default conn => {
           message: 'Client IP/Host address rejected'
         }
 
-        return next(santilize({
+        return next(sanitize({
           error,
           status: errorCode(error)
         }))
@@ -68,7 +68,7 @@ export default conn => {
         message: `Request timeout exceeds the max value: ${config.httpConnectionTimeout}ms`
       }
 
-      return next(santilize({
+      return next(sanitize({
         error,
         status: errorCode(error)
       }))
@@ -111,7 +111,7 @@ export default conn => {
         .catch(error => {
           logger.debug('Connection failed')
 
-          next(santilize({
+          next(sanitize({
             error,
             timeout,
             user,
@@ -136,7 +136,7 @@ function handleQuery (req, res, next, conn, options) {
 
       res
         .status(200)
-        .json(santilize({
+        .json(sanitize({
           data,
           duration,
           timeout,
@@ -148,7 +148,7 @@ function handleQuery (req, res, next, conn, options) {
     .catch(error => {
       const duration = Date.now() - started
 
-      next(santilize({
+      next(sanitize({
         error,
         duration,
         timeout,
