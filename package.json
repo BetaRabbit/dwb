@@ -1,7 +1,7 @@
 {
   "name": "dwb",
   "version": "0.1.0",
-  "description": "A Azure SQL Data Warehouse benchmarking tool",
+  "description": "A Azure SQL Data Warehouse HTTP SQL wrapper",
   "babel": {
     "presets": [
       [
@@ -23,8 +23,7 @@
   },
   "keywords": [
     "azure",
-    "SQL Data Warehouse",
-    "benchmarking"
+    "SQL Data Warehouse"
   ],
   "author": "Tianxiao Ma",
   "license": "MIT",
