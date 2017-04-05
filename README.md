@@ -317,13 +317,13 @@ pm2 start process.json --env <environment>
 ### Reload
 to gracefully reload a application without downtime, do:
 ```
-pm2 reload process.json <app-name>
+pm2 reload <app-id>
 ```
 
 ### Stop
 To stop a application, do:
 ```
-pm2 stop <app-name>
+pm2 stop <app-id>
 ```
 
 ### How to Query
@@ -331,7 +331,9 @@ To execute a SQL command, you need to send a POST request to `http://<ip-or-host
 ```json
 {
   "sql": "select * from my_table",
-  "timeout": 30000 // optional, request timeout in milliseconds
+  "timeout": 30000, // optional, request timeout in milliseconds
+  "user": "user", // optional, customized query credentials
+  "password": "password" // optional, customized query credentials
 }
 ```
 > **Note:** Do **NOT** send more than one queries at the same time, **ONLY** the result of the last query will be returned.
