@@ -136,16 +136,17 @@ function handleQuery (req, res, next, conn, options) {
 
       res
         .status(200)
-        .json(sanitize({
+        .json({
           data,
           duration,
           timeout,
-          user,
+          user: sanitize(user),
           query: req.body.sql
-        }))
+        })
       logger.info(`Query SQL command completed: ${req.body.sql}, duration: ${duration}ms`)
     })
     .catch(error => {
+      logger.error(`Query failed. Error: ${error}`)
       const duration = Date.now() - started
 
       next(sanitize({

@@ -1,4 +1,4 @@
-const config = require('../../config')
+import config from '../../config'
 
 export function errorCode (error) {
   if (error && error.code === 'EREQUEST') return 400
@@ -24,7 +24,7 @@ function sanitizeStr (msg) {
 export function sanitize (data) {
   if (Array.isArray(data)) return data.map(item => sanitize(item))
 
-  if (typeof data === 'object') {
+  if (data && typeof data === 'object') {
     Object.keys(data).forEach(key => {
       data[key] = sanitize(data[key])
     })
