@@ -11,7 +11,8 @@ const port = process.env.PORT || 3000
 
 const app = express()
 app.use(cors())
-app.use(bodyParser.json())
+app.use(bodyParser.json({ limit: '50mb' }))
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true}))
 app.use(morgan('combined', {
   stream: {
     write: msg => logger.info(msg.trim())
